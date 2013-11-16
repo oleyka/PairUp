@@ -7,15 +7,16 @@
 	<script src="js/jquery.js"></script>
 	<script src="js/jquery-ui-1.10.3.custom.min.js"></script>
 	<script src="js/jquery.dataTables.js"></script>
-
-	<!--link href="css/jquery.dataTables.css" rel="stylesheet">
-	<link href="css/demo_table_jui.css" rel="stylesheet">
+	
+	<link href="css/ui-lightness/jquery-ui-1.10.3.custom.css" rel="stylesheet">
+	<link href="css/jquery.dataTables.css" rel="stylesheet">
+	<!--<link href="css/demo_table_jui.css" rel="stylesheet">
 	<link href="css/demo_table.css" rel="stylesheet">
 	<link href="css/demo_page.css" rel="stylesheet"-->
 
 	<link href="css/jquery.dataTables_themeroller.css" rel="stylesheet">
 
-	<link href="css/ui-lightness/jquery-ui-1.10.3.custom.css" rel="stylesheet">
+
 </head>
 <body>
 <table id="data"></table>
@@ -23,7 +24,7 @@
 	$('#data').dataTable({
 		aaData: data_array,
 		"bJQueryUI": true,
-		"sDom": '<"top"i>rt<"bottom"flp><"clear">',
+		//"sDom": '<"top"i>rt<"bottom"flp><"clear">',
 		aoColumns: [
 			{ sTitle: "Breed" },
 			{ sTitle: "%Ex" },
