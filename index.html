@@ -8,6 +8,8 @@
 	<script src="js/jquery.js"></script>
 	<script src="js/jquery-ui-1.10.3.custom.min.js"></script>
 	<script src="js/jquery.dataTables.min.js"></script>
+	<script src="js/highcharts.js"></script>
+	<script src="js/modules/exporting.js"></script>
 	
 	<link href="css/ui-lightness/jquery-ui-1.10.3.custom.min.css" rel="stylesheet">
 	<link href="css/jquery.dataTables.css" rel="stylesheet">
@@ -23,11 +25,15 @@ table#data_table {
 }
 
 table#data_table th {
-	padding: 6px;
+	padding: 3px 0;
 }
 
 table#data_table td {
 	width: 60px;
+}
+
+table#data_table td.breed {
+	cursor: pointer;
 }
 
 table#data_table td.generic {
@@ -53,6 +59,10 @@ table#data_table td.displastic {
 table#data_table td.displastic.total { 
 	background-color: #ffdddd;
 	background-color: rgba(255, 200, 200, 0.6);
+}
+
+div#breed_chart {
+	width: 600px;
 }
 
 /* TEMP */
@@ -93,20 +103,8 @@ table#data_source { display: none; }
 	</tr>
 	</thead>
 	</table>
-
+<!--------------------------------------- -->
       <TABLE id='data_source'>
-<!--        <TR BGCOLOR="000088"> 
-          <TH VALIGN="bottom" WIDTH="33%" BGCOLOR="000088"><B><font color="#FFFFFF" xsize="2">Breed</font></B></TH>
-          <TH VALIGN="bottom" WIDTH="15%"><font color="ffffff" xsize="2">Rating<BR>
-            Total Dogs</font></TH>
-          <TH ALIGN="center" VALIGN="bottom" WIDTH="10%"><b><font color="#FFFFFF" xsize="2">Born<br/>to 1990</font></b></TH>
-          <TH ALIGN="center" VALIGN="bottom" WIDTH="12%"><FONT color="ffffff"><b><font xsize="2">Born<br/>1991-95</font></b></FONT></TH>
-          <TH ALIGN="center" VALIGN="bottom" WIDTH="12%"><FONT color="ffffff"><b><font xsize="2">Born<br/>96-2000</font></b></FONT></TH>
-          <TH ALIGN="center" VALIGN="bottom" WIDTH="12%"><FONT color="ffffff"><b><font xsize="2">Born<br/>2001-05</font></b></FONT></TH>
-          <TH ALIGN="center" VALIGN="bottom" WIDTH="12%"><FONT color="ffffff"><b><font xsize="2">Born<br/>2006-10</font></b></FONT></TH>
-          <TH VALIGN="top" WIDTH="15%"><FONT color="ffffff"><b><font size="2">Change</font></b><font xsize="2"><BR>
-            1990 to<br/>2006-10</font></FONT></TH>
-        </TR> -->
         <TR> 
           <TD VALIGN="TOP" WIDTH="33%" BGCOLOR="ffffcc">AFFENPINSCHER                           </TD>
           <TD VALIGN="top">Excellent<br>
@@ -3972,6 +3970,9 @@ table#data_source { display: none; }
             </TD>
         </TR>
        </table>
+<!--------------------------------------- -->
+
+<div id="breed_chart"></div>
 
 <script>
 
@@ -3984,19 +3985,19 @@ function parse_source(sel) {
 
 	$(sel + ' tbody').children('tr').each(function() {
 		breed_data = $(this).children('td').contents();
-		breed_array = [breed_data[0].data.replace(/\s+$/, ''),
-			breed_data[6].data, breed_data[8].data.replace(/\s/g, ""), breed_data[10].data.replace(/\s/g, ""),
-			breed_data[11].data, breed_data[13].data.replace(/\s/g, ""), breed_data[15].data.replace(/\s/g, ""),
-			breed_data[16].data, breed_data[18].data.replace(/\s/g, ""), breed_data[20].data.replace(/\s/g, ""),
-			breed_data[21].data, breed_data[23].data.replace(/\s/g, ""), breed_data[25].data.replace(/\s/g, ""),
-			breed_data[26].data, breed_data[28].data.replace(/\s/g, ""), breed_data[30].data.replace(/\s/g, "")];
+		breed_array = [ '<div id="breed_' + breed_index + '">' + breed_data[0].data.replace(/\s+$/, '') + '</div>',
+			breed_data[6].data.replace(/\%$/, ''), breed_data[8].data.replace(/\s/g, "").replace(/\%$/, ''), breed_data[10].data.replace(/\s/g, ""),
+			breed_data[11].data.replace(/\%$/, ''), breed_data[13].data.replace(/\s/g, "").replace(/\%$/, ''), breed_data[15].data.replace(/\s/g, ""),
+			breed_data[16].data.replace(/\%$/, ''), breed_data[18].data.replace(/\s/g, "").replace(/\%$/, ''), breed_data[20].data.replace(/\s/g, ""),
+			breed_data[21].data.replace(/\%$/, ''), breed_data[23].data.replace(/\s/g, "").replace(/\%$/, ''), breed_data[25].data.replace(/\s/g, ""),
+			breed_data[26].data.replace(/\%$/, ''), breed_data[28].data.replace(/\s/g, "").replace(/\%$/, ''), breed_data[30].data.replace(/\s/g, "")];
 
 		if (breed_data[31].data) {
-			breed_array[16] = breed_data[31].data.replace(/\s/g, "");
-			breed_array[17] = breed_data[33].data.replace(/\s/g, ""); 
+			breed_array[16] = breed_data[31].data.replace(/\s/g, "").replace(/\%$/, '');
+			breed_array[17] = breed_data[33].data.replace(/\s/g, "").replace(/\%$/, ''); 
 		} else {
 			breed_array[16] = '';
-			breed_array[17] = breed_data[32].data.replace(/\s/g, "");
+			breed_array[17] = breed_data[32].data.replace(/\s/g, "").replace(/\%$/, '');
 		} 
 
 		all_breed_array[breed_index++] = breed_array; 
@@ -4004,33 +4005,84 @@ function parse_source(sel) {
 	return all_breed_array;
 }
 
-var data_array = parse_source('#data_source');
+var data_array = parse_source('#data_source'); /* GLOBAL!!! */
 
-	$('#data_table').dataTable({
-		aaData: data_array,
-		bAutoWidth: false,
-		bJQueryUI: true,
-		aoColumns: [
-			{ sWidth: '150px' },
-			{ sClass: 'healthy', sType: 'numeric' },
-			{ sClass: 'displastic', sType: 'numeric' },
-			{ sClass: 'generic', sType: 'numeric' },
-			{ sClass: 'healthy', sType: 'numeric' },
-			{ sClass: 'displastic', sType: 'numeric' },
-			{ sClass: 'generic', sType: 'numeric' },
-			{ sClass: 'healthy', sType: 'numeric' },
-			{ sClass: 'displastic', sType: 'numeric' },
-			{ sClass: 'generic', sType: 'numeric' },
-			{ sClass: 'healthy', sType: 'numeric' },
-			{ sClass: 'displastic', sType: 'numeric' },
-			{ sClass: 'generic', sType: 'numeric' },
-			{ sClass: 'healthy', sType: 'numeric' },
-			{ sClass: 'displastic', sType: 'numeric' },
-			{ sClass: 'generic', sType: 'numeric' },
-			{ sClass: 'healthy total', sType: 'numeric' },
-			{ sClass: 'displastic total', sType: 'numeric' }
-		]
-	}); 
+function true_sum(data) {
+	var sum = 0;
+	for (var i = 0; i < data.length; i++) {
+		sum += Number(data[i]);
+	}
+	return sum;
+}
+
+function display_breed_chart(sel, pre_breed) {
+	var breed = pre_breed.replace(/breed_/, '');
+	$(sel).highcharts({
+		chart: { type: 'column' },
+		title: { text: 'Порода: ' + data_array[breed][0] + '<br>(обследовано всего: ' + 
+				true_sum([ data_array[breed][3], data_array[breed][6], data_array[breed][9], data_array[breed][12], data_array[breed][15] ]) + ')'},
+		xAxis: { categories: ['до 1990', '1991-95', '1996-2000', '2001-05', '2006-10'] },
+		yAxis: { title: { text: '%' } }, /* max: 100, but we dropped it */
+		series: [{
+			name: '% отлично',
+			color: '#aaeeaa',
+			data: [
+				Number(data_array[breed][1]), 
+				Number(data_array[breed][4]), 
+				Number(data_array[breed][7]), 
+				Number(data_array[breed][10]), 
+				Number(data_array[breed][13])]
+		}, {
+			name: '% дисплазии',
+			color: '#eeaaaa',
+			data: [
+				Number(data_array[breed][2]), 
+				Number(data_array[breed][5]), 
+				Number(data_array[breed][8]), 
+				Number(data_array[breed][11]), 
+				Number(data_array[breed][14])]
+		}]
+	});
+}
+
+$('#data_table').dataTable({
+	aaData: data_array,
+	bAutoWidth: false,
+	bJQueryUI: true,
+	aoColumns: [
+		{ sClass: 'breed', sWidth: '150px' },
+		{ sClass: 'healthy', sType: 'numeric' },
+		{ sClass: 'displastic', sType: 'numeric' },
+		{ sClass: 'generic', sType: 'numeric' },
+		{ sClass: 'healthy', sType: 'numeric' },
+		{ sClass: 'displastic', sType: 'numeric' },
+		{ sClass: 'generic', sType: 'numeric' },
+		{ sClass: 'healthy', sType: 'numeric' },
+		{ sClass: 'displastic', sType: 'numeric' },
+		{ sClass: 'generic', sType: 'numeric' },
+		{ sClass: 'healthy', sType: 'numeric' },
+		{ sClass: 'displastic', sType: 'numeric' },
+		{ sClass: 'generic', sType: 'numeric' },
+		{ sClass: 'healthy', sType: 'numeric' },
+		{ sClass: 'displastic', sType: 'numeric' },
+		{ sClass: 'generic', sType: 'numeric' },
+		{ sClass: 'healthy total', sType: 'numeric' },
+		{ sClass: 'displastic total', sType: 'numeric' }
+	],
+	fnInitComplete: function() {
+		for (var i = 0; i < data_array.length; i++) {
+			$('#breed_' + i).live('click', function() {
+				display_breed_chart('#breed_chart', this.id);
+			});
+		} 
+	}
+}); 
+
+/*		$('#breed_1').click(function(){
+			console.log("Clicked on"); // + iDataIndex);
+			display_breed_chart('#breed_chart', 1);// iDataIndex);
+		}); */
+
 </script>
 </body>
 </html>
